@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morgue — Section Médicale Seimei | Sunagakure</title>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<style>
+@import url('vendor/fonts.css');
+:root{
+  --sand-1:#f4e4c1;--sand-deep:#c89b5e;--ocre:#b5712b;--ocre-deep:#8a4f1a;
+  --rust:#7a3b15;--parchment:#f0dfb8;--chakra:#6fcf97;--chakra-glow:#3ddc84;
+  --blood-light:#c4453a;--blood:#9a2820;--gold:#ffd86b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Cormorant Garamond',serif;color:var(--parchment);min-height:100vh;
+  background:radial-gradient(ellipse at 50% -10%,#3a2812 0%,transparent 55%),
+    linear-gradient(160deg,#1a1008 0%,#0e0804 60%,#080402 100%);}
+body::before{content:"";position:fixed;inset:0;opacity:.04;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index:1;}
+.wrap{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:30px 16px 70px;}
+header{text-align:center;margin-bottom:24px;}
+h1{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(1.6rem,4.5vw,2.5rem);
+  color:var(--sand-1);text-shadow:0 2px 0 #1a0a04,0 0 30px rgba(154,40,32,.4);letter-spacing:.06em;}
+.sub{color:var(--sand-deep);font-style:italic;font-size:1.1rem;margin-top:4px;}
+.divider{height:2px;width:55%;margin:14px auto 0;
+  background:linear-gradient(90deg,transparent,var(--blood),transparent);}
+.panel{background:linear-gradient(160deg,rgba(200,180,160,.05),rgba(40,20,10,.15));
+  border:1px solid rgba(154,40,32,.4);border-radius:14px;padding:22px;margin-bottom:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);}
+.panel h2{font-family:'Cinzel',serif;font-weight:700;color:var(--blood-light);font-size:1.15rem;
+  letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.panel h2::before{content:"";width:7px;height:7px;background:var(--blood);transform:rotate(45deg);}
+label{display:block;color:var(--sand-deep);margin-bottom:5px;font-size:1rem;}
+input[type=password],input[type=text],input[type=date],textarea,select{
+  width:100%;padding:11px 14px;font-family:inherit;font-size:1.05rem;
+  background:rgba(10,6,2,.6);color:var(--sand-1);border:1px solid rgba(154,40,32,.5);
+  border-radius:8px;outline:none;transition:.25s;}
+input:focus,textarea:focus,select:focus{border-color:var(--blood-light);box-shadow:0 0 12px rgba(154,40,32,.3);}
+textarea{min-height:80px;resize:vertical;}
+select{cursor:pointer;}
+.btn{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;cursor:pointer;border:none;
+  border-radius:9px;padding:11px 22px;font-size:.9rem;text-transform:uppercase;
+  background:linear-gradient(160deg,var(--blood),#5a1810);color:#ffd8d0;
+  box-shadow:0 4px 0 #3a0808,0 7px 14px rgba(0,0,0,.4);transition:transform .12s,box-shadow .12s;
+  text-decoration:none;display:inline-block;}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #3a0808;}
+.btn.ghost{background:transparent;border:1px solid var(--blood-light);box-shadow:none;color:var(--sand-1);}
+.btn.ocre{background:linear-gradient(160deg,var(--ocre),var(--ocre-deep));color:#fff5e6;box-shadow:0 4px 0 var(--rust);}
+.btn.green{background:linear-gradient(160deg,#2a6a3a,#1a4a24);color:#c0ffd0;box-shadow:0 4px 0 #0d2a14;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none !important;}
+.err{color:#ffcaa0;background:rgba(196,69,58,.12);border:1px solid rgba(196,69,58,.5);
+  border-radius:8px;padding:10px;margin-top:10px;}
+.ok-msg{color:var(--chakra);background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.4);
+  border-radius:8px;padding:10px;margin-top:10px;}
+/* auth */
+#auth{max-width:480px;margin:40px auto;}
+.auth-tabs{display:flex;gap:0;margin-bottom:18px;}
+.auth-tab{flex:1;padding:12px;text-align:center;font-family:'Cinzel',serif;font-weight:700;
+  font-size:.95rem;letter-spacing:.04em;cursor:pointer;border:1px solid rgba(154,40,32,.4);
+  color:var(--sand-deep);background:transparent;transition:.2s;}
+.auth-tab:first-child{border-radius:8px 0 0 8px;}
+.auth-tab:last-child{border-radius:0 8px 8px 0;}
+.auth-tab.active{background:linear-gradient(160deg,var(--blood),#5a1810);color:#ffd8d0;border-color:var(--blood-light);}
+.user-bar{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;background:rgba(10,6,2,.5);border:1px solid rgba(154,40,32,.3);
+  border-radius:8px;margin-bottom:18px;font-size:1rem;}
+.user-bar .name{font-family:'Cinzel',serif;font-weight:700;color:var(--gold);}
+#dash{display:none;}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.tab{font-family:'Cinzel',serif;font-weight:700;font-size:.85rem;letter-spacing:.05em;
+  padding:9px 18px;border-radius:8px;cursor:pointer;
+  border:1px solid rgba(154,40,32,.4);background:transparent;color:var(--sand-deep);
+  text-transform:uppercase;transition:.2s;}
+.tab:hover{color:var(--sand-1);border-color:var(--blood-light);}
+.tab.active{background:linear-gradient(160deg,var(--blood),#5a1810);color:#ffd8d0;
+  border-color:var(--blood-light);box-shadow:0 3px 0 #3a0808;}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:18px;}
+.card{text-align:center;background:rgba(10,6,2,.5);border:1px solid rgba(154,40,32,.35);
+  border-radius:10px;padding:14px 6px;}
+.card .lbl{font-size:.78rem;color:var(--sand-deep);text-transform:uppercase;letter-spacing:.07em;}
+.card .num{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:700;}
+.card .num.blood{color:var(--blood-light);}
+.card .num.gold{color:var(--gold);}
+.card .num.green{color:var(--chakra-glow);}
+.card .num.sand{color:var(--sand-1);}
+.card .num.ocre{color:var(--ocre);}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.search{padding:9px 14px;font-family:inherit;font-size:1rem;background:rgba(10,6,2,.6);
+  color:var(--sand-1);border:1px solid rgba(154,40,32,.4);border-radius:8px;outline:none;flex:1;max-width:240px;}
+.filter-sel{padding:9px 12px;font-family:inherit;font-size:.92rem;background:rgba(10,6,2,.6);
+  color:var(--sand-1);border:1px solid rgba(154,40,32,.4);border-radius:8px;cursor:pointer;}
+.tablewrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.98rem;}
+th{font-family:'Cinzel',serif;font-weight:700;color:var(--blood-light);text-align:left;
+  padding:10px 8px;border-bottom:2px solid rgba(154,40,32,.4);font-size:.83rem;cursor:pointer;}
+th:hover{color:var(--sand-1);}
+td{padding:9px 8px;border-bottom:1px solid rgba(154,40,32,.15);color:var(--parchment);}
+tr:hover td{background:rgba(154,40,32,.06);}
+.muted{color:var(--sand-deep);font-size:.88rem;}
+.empty{text-align:center;color:var(--sand-deep);font-style:italic;padding:28px;}
+.badge{display:inline-block;font-family:'Cinzel',serif;font-weight:700;font-size:.76rem;
+  padding:2px 9px;border-radius:6px;letter-spacing:.04em;}
+.badge.admis{background:rgba(255,216,107,.2);color:var(--gold);}
+.badge.autopsie_en_cours{background:rgba(181,113,43,.2);color:var(--ocre);}
+.badge.autopsie{background:rgba(61,220,132,.15);color:var(--chakra);}
+.badge.libere{background:rgba(200,155,94,.15);color:var(--sand-deep);}
+.loc-badge{display:inline-block;font-size:.8rem;padding:2px 8px;border-radius:5px;
+  font-family:'Cinzel',serif;font-weight:700;letter-spacing:.03em;}
+.loc-badge.caisson{background:rgba(100,160,220,.2);color:#8ac0e8;}
+.loc-badge.enterre{background:rgba(120,100,60,.25);color:#c8a878;}
+.loc-badge.incinere{background:rgba(200,100,40,.2);color:#e8a060;}
+.loc-badge.remis{background:rgba(200,155,94,.15);color:var(--sand-deep);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-grid.full{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;
+  display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.modal{background:#140a04;border:1px solid var(--blood);border-radius:14px;
+  width:100%;max-width:750px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.8);margin:30px 0;}
+.modal h3{font-family:'Cinzel',serif;color:var(--blood-light);font-size:1.15rem;margin-bottom:16px;}
+.modal-close{float:right;cursor:pointer;color:var(--sand-deep);font-size:1.3rem;}
+.modal-close:hover{color:var(--sand-1);}
+.section-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--ocre);
+  margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(181,113,43,.3);}
+footer{text-align:center;margin-top:28px;color:var(--sand-deep);font-style:italic;font-size:.9rem;}
+footer .seal{color:var(--blood-light);font-family:'Cinzel',serif;}
+.role-sup{background:rgba(255,216,107,.2);color:var(--gold);font-family:'Cinzel',serif;font-weight:700;}
+.role-membre{background:rgba(200,155,94,.15);color:var(--sand-deep);font-family:'Cinzel',serif;}
+.user-banni{color:var(--blood-light);text-decoration:line-through;}
+.user-actif{color:var(--chakra-glow);}
+.btn.danger{background:linear-gradient(160deg,#7a1a1a,#4a0a0a);color:#ffb0a0;box-shadow:0 4px 0 #2a0404;}
+.btn.warn-btn{background:linear-gradient(160deg,#8a6a1a,#5a4010);color:#ffe0a0;box-shadow:0 4px 0 #3a2808;}
+/* caissons */
+.caisson{border:2px solid rgba(100,160,220,.35);border-radius:12px;padding:14px 10px;
+  min-height:120px;cursor:pointer;transition:.25s;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:rgba(10,6,2,.5);}
+.caisson:hover{border-color:rgba(100,160,220,.7);background:rgba(100,160,220,.08);}
+.caisson .num{font-family:'Cinzel',serif;font-weight:900;font-size:1.4rem;color:rgba(100,160,220,.5);
+  position:absolute;top:6px;left:10px;}
+.caisson.vide{border-style:dashed;border-color:rgba(100,160,220,.2);}
+.caisson.vide .status-txt{color:rgba(100,160,220,.4);font-style:italic;font-size:.95rem;}
+.caisson.occupe{border-color:rgba(154,40,32,.6);background:rgba(154,40,32,.08);}
+.caisson.occupe:hover{border-color:var(--blood-light);background:rgba(154,40,32,.14);}
+.caisson.occupe .num{color:rgba(154,40,32,.6);}
+.caisson .corps-nom{font-family:'Cinzel',serif;font-weight:700;font-size:1rem;color:var(--sand-1);margin-top:4px;}
+.caisson .corps-info{font-size:.85rem;color:var(--sand-deep);margin-top:2px;}
+.caisson .corps-cause{font-size:.8rem;color:var(--blood-light);font-style:italic;margin-top:2px;}
+/* assign modal */
+.assign-list{max-height:280px;overflow-y:auto;margin:10px 0;}
+.assign-item{padding:10px 12px;border:1px solid rgba(154,40,32,.25);border-radius:8px;margin-bottom:6px;
+  cursor:pointer;transition:.18s;display:flex;justify-content:space-between;align-items:center;}
+.assign-item:hover{background:rgba(154,40,32,.1);border-color:var(--blood-light);}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Morgue de Sunagakure</h1>
+  <div class="sub">Section Médicale Seimei — Registre confidentiel</div>
+  <div class="divider"></div>
+</header>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="panel">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin">Identification</div>
+      <div class="auth-tab" id="tabRegister">Créer un sceau</div>
+    </div>
+    <!-- LOGIN -->
+    <div id="formLogin">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Nom du shinobi</label>
+        <input type="text" id="loginNom" placeholder="Ex : Artel Gaïa" autocomplete="off">
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Sceau personnel</label>
+        <input type="password" id="loginSceau" placeholder="••••••••" autocomplete="off">
+      </div>
+      <div style="text-align:center;">
+        <button class="btn" id="loginBtn">S'identifier</button>
+      </div>
+      <div id="loginMsg"></div>
+    </div>
+    <!-- REGISTER -->
+    <div id="formRegister" style="display:none;">
+      <p style="color:var(--sand-deep);font-style:italic;margin-bottom:14px;font-size:.95rem;">Première connexion ? Crée ton identifiant pour accéder au registre de la morgue.</p>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Ton nom RP (shinobi)</label>
+        <input type="text" id="regNom" placeholder="Ex : Artel Gaïa" autocomplete="off">
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Choisis un sceau (mot de passe)</label>
+        <input type="password" id="regSceau" placeholder="6 caractères minimum" autocomplete="off">
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Confirme ton sceau</label>
+        <input type="password" id="regSceau2" placeholder="Répète ton sceau" autocomplete="off">
+      </div>
+      <div style="text-align:center;">
+        <button class="btn" id="regBtn">Créer mon identifiant</button>
+      </div>
+      <div id="regMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash">
+  <div class="user-bar">
+    <span>Connecté : <span class="name" id="userNameBar">—</span> <span id="userRoleBadge" style="font-size:.75rem;padding:2px 8px;border-radius:5px;margin-left:6px;display:none;"></span></span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn ghost" style="font-size:.75rem;padding:4px 10px;display:none;" id="promoSelfBtn">Devenir superviseur</button>
+      <button class="btn ghost" style="font-size:.78rem;padding:4px 12px;" id="logoutBtn">Déconnexion</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-view="list">📋 Registre</button>
+    <button class="tab" data-view="caissons">🧊 Caissons</button>
+    <button class="tab" data-view="add">➕ Admission</button>
+    <button class="tab" data-view="gestion" id="tabGestion" style="display:none;">⚙️ Gestion</button>
+  </div>
+  <div id="viewList">
+    <div class="summary" id="summary"></div>
+    <div class="toolbar">
+      <input type="text" class="search" id="search" placeholder="Rechercher...">
+      <select class="filter-sel" id="filterStatus">
+        <option value="">Tous statuts</option>
+        <option value="admis">Admis</option>
+        <option value="autopsie_en_cours">Autopsie en cours</option>
+        <option value="autopsie">Autopsié</option>
+        <option value="libere">Libéré</option>
+      </select>
+      <select class="filter-sel" id="filterLoc">
+        <option value="">Toutes localisations</option>
+        <option value="caisson">En caisson</option>
+        <option value="enterre">Enterré</option>
+        <option value="incinere">Incinéré</option>
+        <option value="remis">Remis aux proches</option>
+      </select>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" id="refreshBtn">Actualiser</button>
+        <button class="btn ghost" id="csvBtn">CSV</button>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th data-sort="created_at">Admis le</th>
+          <th data-sort="nom">Identité</th>
+          <th data-sort="grade">Grade</th>
+          <th data-sort="village">Village</th>
+          <th data-sort="cause">Cause</th>
+          <th data-sort="statut">Statut</th>
+          <th data-sort="localisation">Corps</th>
+          <th>Dossier</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="8" class="empty">Chargement...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- CAISSONS VIEW -->
+  <div id="viewCaissons" style="display:none;">
+    <div class="panel">
+      <h2>Plan de la morgue — 12 caissons</h2>
+      <p style="color:var(--sand-deep);font-style:italic;margin-bottom:16px;">Clique sur un caisson occupé pour voir le dossier. Clique sur un caisson vide pour y assigner un corps admis.</p>
+      <div id="caissonGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;"></div>
+      <div id="caissonMsg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+  <div id="viewAdd" style="display:none;">
+    <div class="panel">
+      <h2>Nouvelle admission</h2>
+      <div class="form-grid">
+        <div class="form-group"><label>Nom</label><input type="text" id="fNom" placeholder="Nom ou 'Inconnu'"></div>
+        <div class="form-group"><label>Prénom</label><input type="text" id="fPrenom"></div>
+        <div class="form-group"><label>Grade</label>
+          <select id="fGrade"><option>Inconnu</option><option>Civil</option><option>Genin</option><option>Genin confirmé</option><option>Chunin</option><option>Konin</option><option>Tokubetsu Jonin</option><option>Jonin</option><option>Commandant Jonin</option><option>Kage</option></select></div>
+        <div class="form-group"><label>Village</label>
+          <select id="fVillage"><option>Sunagakure</option><option>Konohagakure</option><option>Kirigakure</option><option>Kumogakure</option><option>Iwagakure</option><option>Inconnu</option><option>Autre</option></select></div>
+        <div class="form-group"><label>Date du décès</label><input type="date" id="fDate"></div>
+        <div class="form-group"><label>Cause présumée</label>
+          <select id="fCause"><option>Inconnue</option><option>Combat</option><option>Maladie</option><option>Pandémie</option><option>Accident</option><option>Assassinat</option><option>Suicide</option><option>Exécution</option><option>Autre</option></select></div>
+      </div>
+      <div class="form-grid full">
+        <div class="form-group"><label>Circonstances</label><textarea id="fCirc" placeholder="Contexte du décès..."></textarea></div>
+        <div class="form-group"><label>Lieu du décès</label><input type="text" id="fLieu" placeholder="Ex : désert ouest"></div>
+        <div class="form-group"><label>Ramené par</label><input type="text" id="fRamene"></div>
+        <div class="form-group"><label>Caisson n°</label>
+          <select id="fCaisson"><option value="">Attribuer plus tard</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+          <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select></div>
+        <div class="form-group"><label>Notes</label><textarea id="fNotes" placeholder="Observations..."></textarea></div>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <button class="btn" id="submitBtn">Enregistrer l'admission</button>
+      </div>
+      <div id="addMsg"></div>
+    </div>
+  </div>
+  <!-- GESTION (superviseurs) -->
+  <div id="viewGestion" style="display:none;">
+    <div class="panel">
+      <h2>Gestion des utilisateurs</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th>Nom</th><th>Rôle</th><th>Statut</th><th>Inscrit le</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="usersTbody"><tr><td colspan="5" class="empty">Chargement...</td></tr></tbody>
+        </table>
+      </div>
+      <div id="gestionMsg" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="modalBg" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><span class="modal-close" onclick="closeModal()">✕</span><div id="modalBody"></div></div>
+</div>
+
+<footer>Registre confidentiel · <span class="seal">Seimei</span> · Morgue de Sunagakure</footer>
+</div>
+
+<script>
+(function(){
+var el=function(id){return document.getElementById(id);};
+var sb=null, rows=[], sortKey='created_at', sortDir=-1;
+var currentUser='', currentRole='membre';
+
+function init(){
+  if(typeof SUPABASE_URL==='undefined'||SUPABASE_URL.indexOf('REMPLACE')===0)return;
+  try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){sb=null;}
+}
+init();
+
+function enterDash(){
+  el('auth').style.display='none';el('dash').style.display='block';
+  el('userNameBar').textContent=currentUser;
+  var badge=el('userRoleBadge');
+  if(currentRole==='superviseur'){
+    badge.textContent='Superviseur';badge.className='role-sup';badge.style.display='inline';
+    el('tabGestion').style.display='';
+    el('promoSelfBtn').style.display='none';
+  } else {
+    badge.textContent='Membre';badge.className='role-membre';badge.style.display='inline';
+    el('tabGestion').style.display='none';
+    el('promoSelfBtn').style.display='';
+  }
+  load();
+}
+
+// ── AUTO-LOGIN ──
+try{
+  var saved=localStorage.getItem('morgue_user');
+  var savedRole=localStorage.getItem('morgue_role');
+  if(saved && sb){
+    currentUser=saved;
+    currentRole=savedRole||'membre';
+    enterDash();
+  }
+}catch(e){}
+
+// ── AUTH TABS ──
+el('tabLogin').addEventListener('click',function(){
+  el('tabLogin').classList.add('active');el('tabRegister').classList.remove('active');
+  el('formLogin').style.display='block';el('formRegister').style.display='none';
+});
+el('tabRegister').addEventListener('click',function(){
+  el('tabRegister').classList.add('active');el('tabLogin').classList.remove('active');
+  el('formRegister').style.display='block';el('formLogin').style.display='none';
+});
+
+// ── LOGIN ──
+el('loginBtn').addEventListener('click',doLogin);
+el('loginSceau').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+function doLogin(){
+  var nom=el('loginNom').value.trim();
+  var sceau=el('loginSceau').value;
+  if(!nom||!sceau){el('loginMsg').innerHTML='<div class="err">Remplis tous les champs.</div>';return;}
+  if(!sb){el('loginMsg').innerHTML='<div class="err">Configuration Supabase absente.</div>';return;}
+  sb.from('morgue_users').select('*').eq('nom',nom).then(function(res){
+    if(res.error){el('loginMsg').innerHTML='<div class="err">Erreur : '+esc(res.error.message)+'</div>';return;}
+    if(!res.data||res.data.length===0){el('loginMsg').innerHTML='<div class="err">Identifiant inconnu. Crée d\'abord ton sceau.</div>';return;}
+    if(res.data[0].sceau!==sceau){el('loginMsg').innerHTML='<div class="err">Sceau incorrect.</div>';return;}
+    if(res.data[0].banni){el('loginMsg').innerHTML='<div class="err">Ton accès a été révoqué par un superviseur.</div>';return;}
+    currentUser=nom;
+    currentRole=res.data[0].role||'membre';
+    try{localStorage.setItem('morgue_user',nom);localStorage.setItem('morgue_role',currentRole);}catch(e){}
+    enterDash();
+  });
+}
+
+// ── REGISTER ──
+el('regBtn').addEventListener('click',doRegister);
+function doRegister(){
+  var nom=el('regNom').value.trim();
+  var s1=el('regSceau').value;
+  var s2=el('regSceau2').value;
+  if(!nom||!s1){el('regMsg').innerHTML='<div class="err">Remplis tous les champs.</div>';return;}
+  if(s1.length<6){el('regMsg').innerHTML='<div class="err">Le sceau doit faire au moins 6 caractères.</div>';return;}
+  if(s1!==s2){el('regMsg').innerHTML='<div class="err">Les deux sceaux ne correspondent pas.</div>';return;}
+  if(!sb){el('regMsg').innerHTML='<div class="err">Configuration Supabase absente.</div>';return;}
+  // check if name already exists
+  sb.from('morgue_users').select('id').eq('nom',nom).then(function(res){
+    if(res.data&&res.data.length>0){el('regMsg').innerHTML='<div class="err">Ce nom est déjà utilisé.</div>';return;}
+    sb.from('morgue_users').insert([{nom:nom,sceau:s1}]).then(function(r2){
+      if(r2.error){el('regMsg').innerHTML='<div class="err">Erreur : '+esc(r2.error.message)+'</div>';return;}
+      el('regMsg').innerHTML='<div class="ok-msg">✓ Identifiant créé. Tu peux te connecter.</div>';
+      el('regNom').value='';el('regSceau').value='';el('regSceau2').value='';
+      setTimeout(function(){el('tabLogin').click();},1500);
+    });
+  });
+}
+
+// ── LOGOUT ──
+el('logoutBtn').addEventListener('click',function(){
+  currentUser='';currentRole='membre';
+  try{localStorage.removeItem('morgue_user');localStorage.removeItem('morgue_role');}catch(e){}
+  el('dash').style.display='none';el('auth').style.display='block';
+  el('loginNom').value='';el('loginSceau').value='';el('loginMsg').innerHTML='';
+});
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+    t.classList.add('active');
+    var v=t.dataset.view;
+    el('viewList').style.display=v==='list'?'block':'none';
+    el('viewCaissons').style.display=v==='caissons'?'block':'none';
+    el('viewAdd').style.display=v==='add'?'block':'none';
+    el('viewGestion').style.display=v==='gestion'?'block':'none';
+    if(v==='gestion') loadUsers();
+    if(v==='caissons') renderCaissons();
+  });
+});
+
+// ── LOAD ──
+function load(){
+  if(!sb){el('tbody').innerHTML='<tr><td colspan="8" class="err">Config absente.</td></tr>';return;}
+  el('tbody').innerHTML='<tr><td colspan="8" class="empty">Chargement...</td></tr>';
+  sb.from('morgue_corps').select('*').order('created_at',{ascending:false}).then(function(res){
+    if(res.error){el('tbody').innerHTML='<tr><td colspan="8" class="err">'+esc(res.error.message)+'</td></tr>';return;}
+    rows=res.data||[];render();
+  });
+}
+
+// ── RENDER ──
+function render(){
+  var q=el('search').value.toLowerCase().trim();
+  var fs=el('filterStatus').value;
+  var fl=el('filterLoc').value;
+  var list=rows.filter(function(r){
+    var txt=((r.nom||'')+' '+(r.prenom||'')+' '+(r.village||'')+' '+(r.cause||'')+' '+(r.ramene_par||'')).toLowerCase();
+    return (!q||txt.indexOf(q)>=0)&&(!fs||r.statut===fs)&&(!fl||r.localisation===fl);
+  });
+  // summary
+  var total=rows.length;
+  var caisson=rows.filter(function(r){return r.localisation==='caisson';}).length;
+  var enterre=rows.filter(function(r){return r.localisation==='enterre';}).length;
+  var incinere=rows.filter(function(r){return r.localisation==='incinere';}).length;
+  var remis=rows.filter(function(r){return r.localisation==='remis';}).length;
+  var enCours=rows.filter(function(r){return r.statut==='autopsie_en_cours';}).length;
+  el('summary').innerHTML=
+    card('Total',total,'sand')+card('En caisson',caisson,'gold')+card('Autopsie en cours',enCours,'blood')+
+    card('Enterrés',enterre,'ocre')+card('Incinérés',incinere,'blood')+card('Remis',remis,'green');
+  list.sort(function(a,b){
+    var x=a[sortKey]||'',y=b[sortKey]||'';
+    if(sortKey==='created_at'){x=new Date(x);y=new Date(y);}
+    if(typeof x==='string'){x=x.toLowerCase();y=y.toLowerCase();}
+    if(x<y)return -1*sortDir;if(x>y)return 1*sortDir;return 0;
+  });
+  var tb=el('tbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty">Aucun corps enregistré.</td></tr>';return;}
+  tb.innerHTML='';
+  list.forEach(function(r){
+    var tr=document.createElement('tr');
+    var ident=esc(r.nom)+(r.prenom?' '+esc(r.prenom):'');
+    tr.innerHTML=
+      '<td class="muted">'+fmtDate(r.created_at)+'</td>'+
+      '<td style="font-weight:600">'+ident+'</td>'+
+      '<td>'+esc(r.grade)+'</td><td>'+esc(r.village)+'</td><td>'+esc(r.cause)+'</td>'+
+      '<td><span class="badge '+esc(r.statut)+'">'+statutLbl(r.statut)+'</span></td>'+
+      '<td><span class="loc-badge '+esc(r.localisation)+'">'+locLbl(r.localisation)+'</span></td>'+
+      '<td><button class="btn ghost" style="font-size:.76rem;padding:4px 10px;" data-id="'+r.id+'">Ouvrir</button></td>';
+    tb.appendChild(tr);
+    tr.querySelector('button[data-id]').addEventListener('click',function(){openDetail(r.id);});
+  });
+}
+
+function card(l,n,c){return '<div class="card"><div class="lbl">'+l+'</div><div class="num '+c+'">'+n+'</div></div>';}
+function statutLbl(s){return {admis:'Admis',autopsie_en_cours:'Autopsie',autopsie:'Autopsié',libere:'Libéré'}[s]||s;}
+function locLbl(l){return {caisson:'En caisson',enterre:'Enterré',incinere:'Incinéré',remis:'Remis'}[l]||l||'—';}
+function fmtDate(d){if(!d)return '-';var dt=new Date(d);if(isNaN(dt))return d;
+  var p=function(x){return(x<10?'0':'')+x;};return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' '+p(dt.getHours())+':'+p(dt.getMinutes());}
+function fmtShort(d){if(!d)return '-';var dt=new Date(d);if(isNaN(dt))return d;
+  var p=function(x){return(x<10?'0':'')+x;};return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear();}
+function esc(t){t=(t==null?'':''+t);return t.replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+
+// ── SORT / FILTER ──
+document.querySelectorAll('th[data-sort]').forEach(function(th){
+  th.addEventListener('click',function(){var k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}render();});
+});
+el('search').addEventListener('input',render);
+el('filterStatus').addEventListener('change',render);
+el('filterLoc').addEventListener('change',render);
+el('refreshBtn').addEventListener('click',load);
+
+// ── CSV ──
+el('csvBtn').addEventListener('click',function(){
+  if(!rows.length)return;
+  var cols=['created_at','nom','prenom','grade','village','cause','circonstances','statut','localisation',
+    'autopsie_medecin','autopsie_observations','autopsie_conclusions','liberation_destinataire','liberation_type','admis_par'];
+  var csv=cols.join(',')+'\n'+rows.map(function(r){return cols.map(function(c){
+    var v=r[c]==null?'':(''+r[c]).replace(/"/g,'""');return /[",\n]/.test(v)?'"'+v+'"':v;}).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='morgue_seimei.csv';a.click();
+});
+
+// ── ADD ──
+el('submitBtn').addEventListener('click',function(){
+  if(!sb)return;
+  var row={
+    nom:el('fNom').value.trim()||'Inconnu',
+    prenom:el('fPrenom').value.trim(),
+    grade:el('fGrade').value,
+    village:el('fVillage').value,
+    date_deces:el('fDate').value||null,
+    cause:el('fCause').value,
+    circonstances:el('fCirc').value.trim(),
+    lieu_deces:el('fLieu').value.trim(),
+    ramene_par:el('fRamene').value.trim(),
+    notes:el('fNotes').value.trim(),
+    statut:'admis',localisation:'caisson',
+    caisson_numero:el('fCaisson').value?parseInt(el('fCaisson').value):null,
+    admis_par:currentUser,
+    derniere_modif_par:currentUser
+  };
+  el('submitBtn').disabled=true;
+  sb.from('morgue_corps').insert([row]).then(function(res){
+    el('submitBtn').disabled=false;
+    if(res.error){el('addMsg').innerHTML='<div class="err">'+esc(res.error.message)+'</div>';return;}
+    el('addMsg').innerHTML='<div class="ok-msg">✓ Corps enregistré par '+esc(currentUser)+'.</div>';
+    ['fNom','fPrenom','fCirc','fLieu','fRamene','fNotes'].forEach(function(id){el(id).value='';});
+    el('fDate').value='';el('fCaisson').value='';load();
+    setTimeout(function(){el('addMsg').innerHTML='';},3000);
+  });
+});
+
+// ── DETAIL ──
+function openDetail(id){
+  var r=rows.find(function(x){return x.id===id;});if(!r)return;
+  var ident=esc(r.nom)+(r.prenom?' '+esc(r.prenom):'');
+  var body=el('modalBody');
+  body.innerHTML=
+    '<h3>Dossier — '+ident+'</h3>'+
+    '<div class="section-title">📋 Informations générales</div>'+
+    infoRow('Identité',ident)+infoRow('Grade',esc(r.grade))+infoRow('Village',esc(r.village))+
+    infoRow('Date du décès',fmtShort(r.date_deces))+infoRow('Cause',esc(r.cause))+
+    infoRow('Circonstances',esc(r.circonstances)||'—')+infoRow('Lieu',esc(r.lieu_deces)||'—')+
+    infoRow('Ramené par',esc(r.ramene_par)||'—')+infoRow('Admis par',esc(r.admis_par)||'—')+
+    infoRow('Statut','<span class="badge '+esc(r.statut)+'">'+statutLbl(r.statut)+'</span>')+
+    infoRow('Localisation','<span class="loc-badge '+esc(r.localisation)+'">'+locLbl(r.localisation)+'</span>'+(r.caisson_numero?' — Caisson n°'+r.caisson_numero:'')+'')+
+    infoRow('Notes',esc(r.notes)||'—')+
+    // localisation
+    '<div class="section-title">📍 Localisation du corps</div>'+
+    '<div class="form-grid"><div class="form-group"><label>Emplacement actuel</label>'+
+    '<select id="dLoc">'+
+      '<option value="caisson"'+(r.localisation==='caisson'?' selected':'')+'>En caisson (morgue)</option>'+
+      '<option value="enterre"'+(r.localisation==='enterre'?' selected':'')+'>Enterré</option>'+
+      '<option value="incinere"'+(r.localisation==='incinere'?' selected':'')+'>Incinéré</option>'+
+      '<option value="remis"'+(r.localisation==='remis'?' selected':'')+'>Remis aux proches</option>'+
+    '</select></div>'+
+    '<div class="form-group"><label>Caisson n°</label>'+
+    '<select id="dCaisson"><option value="">Non assigné</option>'+
+    '<option value="1"'+(r.caisson_numero===1?' selected':'')+'>1</option>'+
+    '<option value="2"'+(r.caisson_numero===2?' selected':'')+'>2</option>'+
+    '<option value="3"'+(r.caisson_numero===3?' selected':'')+'>3</option>'+
+    '<option value="4"'+(r.caisson_numero===4?' selected':'')+'>4</option>'+
+    '<option value="5"'+(r.caisson_numero===5?' selected':'')+'>5</option>'+
+    '<option value="6"'+(r.caisson_numero===6?' selected':'')+'>6</option>'+
+    '<option value="7"'+(r.caisson_numero===7?' selected':'')+'>7</option>'+
+    '<option value="8"'+(r.caisson_numero===8?' selected':'')+'>8</option>'+
+    '<option value="9"'+(r.caisson_numero===9?' selected':'')+'>9</option>'+
+    '<option value="10"'+(r.caisson_numero===10?' selected':'')+'>10</option>'+
+    '<option value="11"'+(r.caisson_numero===11?' selected':'')+'>11</option>'+
+    '<option value="12"'+(r.caisson_numero===12?' selected':'')+'>12</option>'+
+    '</select></div></div>'+
+    '<button class="btn ghost" id="dSaveLoc" style="margin-bottom:16px;">Mettre à jour la localisation</button>'+
+    // autopsie
+    '<div class="section-title">🔬 Autopsie</div>'+
+    '<div class="form-grid">'+
+      '<div class="form-group"><label>Médecin</label><input type="text" id="dAutMed" value="'+esc(r.autopsie_medecin)+'"></div>'+
+      '<div class="form-group"><label>Date</label><input type="date" id="dAutDate" value="'+(r.autopsie_date||'')+'"></div>'+
+    '</div>'+
+    '<div class="form-group" style="margin-bottom:10px;"><label>Observations</label><textarea id="dAutObs">'+esc(r.autopsie_observations)+'</textarea></div>'+
+    '<div class="form-group" style="margin-bottom:10px;"><label>Prélèvements</label><textarea id="dAutPrel">'+esc(r.autopsie_prelevements)+'</textarea></div>'+
+    '<div class="form-group" style="margin-bottom:10px;"><label>Conclusions</label><textarea id="dAutConc">'+esc(r.autopsie_conclusions)+'</textarea></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'+
+      '<button class="btn ocre" id="dSaveAut">Sauvegarder</button>'+
+      '<button class="btn ghost" id="dStartAut">Statut → Autopsie en cours</button>'+
+      '<button class="btn green" id="dDoneAut">Statut → Autopsié</button>'+
+    '</div>'+
+    // libération
+    '<div class="section-title">📤 Libération</div>'+
+    '<div class="form-grid">'+
+      '<div class="form-group"><label>Remis à</label><input type="text" id="dLibDest" value="'+esc(r.liberation_destinataire)+'"></div>'+
+      '<div class="form-group"><label>Type</label><select id="dLibType">'+
+        opt('','—',r.liberation_type)+opt('Remise aux proches','Remise aux proches',r.liberation_type)+
+        opt('Crémation','Crémation',r.liberation_type)+opt('Enterrement','Enterrement',r.liberation_type)+
+        opt('Autre','Autre',r.liberation_type)+'</select></div>'+
+      '<div class="form-group"><label>Date</label><input type="date" id="dLibDate" value="'+(r.liberation_date||'')+'"></div>'+
+      '<div class="form-group"><label>Autorisé par</label><input type="text" id="dLibAuth" value="'+esc(r.liberation_autorise_par)+'"></div>'+
+    '</div>'+
+    '<button class="btn" id="dSaveLib" style="margin-top:8px;">Libérer le corps</button>'+
+    (currentRole==='superviseur'?'<div class="section-title" style="color:var(--blood-light);">⚠ Zone superviseur</div><button class="btn danger" id="dDeleteCorps" style="margin-top:4px;">Supprimer ce dossier</button>':'')+
+    '<div style="margin-top:8px;font-size:.88rem;color:var(--sand-deep);">Dernière modification par : '+(esc(r.derniere_modif_par)||'—')+'</div>'+
+    '<div id="dMsg" style="margin-top:10px;"></div>';
+  setTimeout(function(){
+    el('dSaveLoc').addEventListener('click',function(){
+      var loc=el('dLoc').value;
+      var cNum=el('dCaisson').value?parseInt(el('dCaisson').value):null;
+      if(loc!=='caisson') cNum=null;
+      upd(id,{localisation:loc,caisson_numero:cNum});
+    });
+    el('dSaveAut').addEventListener('click',function(){
+      upd(id,{autopsie_medecin:el('dAutMed').value.trim(),autopsie_date:el('dAutDate').value||null,
+        autopsie_observations:el('dAutObs').value.trim(),autopsie_prelevements:el('dAutPrel').value.trim(),
+        autopsie_conclusions:el('dAutConc').value.trim()});
+    });
+    el('dStartAut').addEventListener('click',function(){upd(id,{statut:'autopsie_en_cours'});});
+    el('dDoneAut').addEventListener('click',function(){upd(id,{statut:'autopsie'});});
+    el('dSaveLib').addEventListener('click',function(){
+      var libType=el('dLibType').value;
+      var newLoc=libType==='Crémation'?'incinere':libType==='Enterrement'?'enterre':'remis';
+      upd(id,{statut:'libere',localisation:newLoc,caisson_numero:null,
+        liberation_date:el('dLibDate').value||null,liberation_destinataire:el('dLibDest').value.trim(),
+        liberation_type:libType,liberation_autorise_par:el('dLibAuth').value.trim()});
+    });
+    var delBtn=document.getElementById('dDeleteCorps');
+    if(delBtn){delBtn.addEventListener('click',function(){deleteCorps(r.id,ident);});}
+  },50);
+  el('modalBg').style.display='flex';
+}
+
+function upd(id,data){
+  if(!sb)return;
+  data.derniere_modif_par=currentUser;
+  data.derniere_modif_date=new Date().toISOString();
+  sb.from('morgue_corps').update(data).eq('id',id).then(function(res){
+    if(res.error){el('dMsg').innerHTML='<div class="err">'+esc(res.error.message)+'</div>';}
+    else{el('dMsg').innerHTML='<div class="ok-msg">✓ Mis à jour par '+esc(currentUser)+'.</div>';load();}
+  });
+}
+
+function opt(val,lbl,cur){return '<option value="'+val+'"'+(cur===val?' selected':'')+'>'+lbl+'</option>';}
+function infoRow(k,v){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(154,40,32,.12);font-size:1rem;"><span style="color:var(--sand-deep)">'+k+'</span><span style="color:var(--sand-1);text-align:right;max-width:60%">'+v+'</span></div>';}
+
+function closeModal(){el('modalBg').style.display='none';}
+window.closeModal=closeModal;
+
+// ── CAISSONS ──
+function renderCaissons(){
+  var grid=el('caissonGrid'); grid.innerHTML='';
+  var occupied={};
+  rows.forEach(function(r){
+    if(r.localisation==='caisson'&&r.caisson_numero>=1&&r.caisson_numero<=12){
+      occupied[r.caisson_numero]=r;
+    }
+  });
+  for(var i=1;i<=12;i++){
+    var div=document.createElement('div');
+    var corps=occupied[i];
+    if(corps){
+      var ident=esc(corps.nom)+(corps.prenom?' '+esc(corps.prenom):'');
+      div.className='caisson occupe';
+      div.innerHTML='<span class="num">'+i+'</span>'+
+        '<div class="corps-nom">'+ident+'</div>'+
+        '<div class="corps-info">'+esc(corps.grade)+' · '+esc(corps.village)+'</div>'+
+        '<div class="corps-cause">'+esc(corps.cause)+'</div>'+
+        '<div style="margin-top:6px;font-size:.78rem;color:var(--sand-deep);">'+statutLbl(corps.statut)+'</div>';
+      (function(c){div.addEventListener('click',function(){openDetail(c.id);});})(corps);
+    } else {
+      div.className='caisson vide';
+      div.innerHTML='<span class="num">'+i+'</span><div class="status-txt">Vide</div>';
+      (function(n){div.addEventListener('click',function(){openAssignModal(n);});})(i);
+    }
+    grid.appendChild(div);
+  }
+  // show unassigned bodies
+  var unassigned=rows.filter(function(r){return r.localisation==='caisson'&&(!r.caisson_numero||r.caisson_numero<1||r.caisson_numero>12);});
+  if(unassigned.length>0){
+    el('caissonMsg').innerHTML='<div style="color:var(--gold);font-style:italic;margin-top:8px;">⚠ '+unassigned.length+' corps en caisson non assigné(s) à un emplacement. Clique sur un caisson vide pour les placer.</div>';
+  } else {
+    el('caissonMsg').innerHTML='';
+  }
+}
+
+function openAssignModal(num){
+  var body=el('modalBody');
+  var unassigned=rows.filter(function(r){
+    return r.localisation==='caisson'&&(!r.caisson_numero||r.caisson_numero<1||r.caisson_numero>12);
+  });
+  body.innerHTML='<h3>Assigner au caisson n°'+num+'</h3>';
+  if(unassigned.length===0){
+    body.innerHTML+='<p style="color:var(--sand-deep);font-style:italic;">Aucun corps en attente d\'assignation. Admets d\'abord un corps via l\'onglet Admission.</p>';
+  } else {
+    body.innerHTML+='<p style="color:var(--sand-deep);margin-bottom:12px;">Choisis le corps à placer dans ce caisson :</p>';
+    var list=document.createElement('div'); list.className='assign-list';
+    unassigned.forEach(function(r){
+      var item=document.createElement('div'); item.className='assign-item';
+      var ident=esc(r.nom)+(r.prenom?' '+esc(r.prenom):'');
+      item.innerHTML='<div><strong>'+ident+'</strong><br><span class="muted">'+esc(r.grade)+' · '+esc(r.village)+' · '+esc(r.cause)+'</span></div>'+
+        '<button class="btn" style="font-size:.78rem;padding:5px 12px;">Assigner</button>';
+      (function(rid){
+        item.querySelector('button').addEventListener('click',function(){
+          assignToCaisson(rid,num);
+        });
+      })(r.id);
+      list.appendChild(item);
+    });
+    body.appendChild(list);
+  }
+  // also allow assigning already-placed bodies (move)
+  var inCaisson=rows.filter(function(r){return r.localisation==='caisson'&&r.caisson_numero>=1&&r.caisson_numero<=12;});
+  if(inCaisson.length>0){
+    body.innerHTML+='<div class="section-title">Déplacer un corps depuis un autre caisson</div>';
+    var list2=document.createElement('div'); list2.className='assign-list';
+    inCaisson.forEach(function(r){
+      var item=document.createElement('div'); item.className='assign-item';
+      var ident=esc(r.nom)+(r.prenom?' '+esc(r.prenom):'');
+      item.innerHTML='<div><strong>'+ident+'</strong> <span class="muted">(caisson '+r.caisson_numero+')</span></div>'+
+        '<button class="btn ghost" style="font-size:.78rem;padding:4px 10px;">Déplacer ici</button>';
+      (function(rid){
+        item.querySelector('button').addEventListener('click',function(){
+          assignToCaisson(rid,num);
+        });
+      })(r.id);
+      list2.appendChild(item);
+    });
+    body.appendChild(list2);
+  }
+  el('modalBg').style.display='flex';
+}
+
+function assignToCaisson(corpsId,num){
+  if(!sb)return;
+  sb.from('morgue_corps').update({caisson_numero:num,derniere_modif_par:currentUser}).eq('id',corpsId).then(function(res){
+    if(res.error){alert('Erreur : '+res.error.message);return;}
+    closeModal();load();
+    setTimeout(renderCaissons,300);
+  });
+}
+
+// ── SUPERVISEUR: auto-promotion ──
+el('promoSelfBtn').addEventListener('click',function(){
+  var code=prompt('Entre le code superviseur :');
+  if(!code)return;
+  var expected=(typeof SUPERVISEUR_CODE!=='undefined')?SUPERVISEUR_CODE:'';
+  if(code!==expected){alert('Code incorrect.');return;}
+  if(!sb)return;
+  sb.from('morgue_users').update({role:'superviseur'}).eq('nom',currentUser).then(function(res){
+    if(res.error){alert('Erreur : '+res.error.message);return;}
+    currentRole='superviseur';
+    try{localStorage.setItem('morgue_role','superviseur');}catch(e){}
+    enterDash();
+  });
+});
+
+// ── SUPERVISEUR: gestion utilisateurs ──
+var allUsers=[];
+function loadUsers(){
+  if(!sb)return;
+  el('usersTbody').innerHTML='<tr><td colspan="5" class="empty">Chargement...</td></tr>';
+  sb.from('morgue_users').select('*').order('created_at',{ascending:true}).then(function(res){
+    if(res.error){el('usersTbody').innerHTML='<tr><td colspan="5" class="err">'+esc(res.error.message)+'</td></tr>';return;}
+    allUsers=res.data||[];renderUsers();
+  });
+}
+
+function renderUsers(){
+  var tb=el('usersTbody');
+  if(!allUsers.length){tb.innerHTML='<tr><td colspan="5" class="empty">Aucun utilisateur.</td></tr>';return;}
+  tb.innerHTML='';
+  allUsers.forEach(function(u){
+    var tr=document.createElement('tr');
+    var isSelf=u.nom===currentUser;
+    var roleBadge=u.role==='superviseur'?'<span class="role-sup" style="padding:2px 8px;border-radius:5px;font-size:.8rem;">Superviseur</span>':'<span class="role-membre" style="padding:2px 8px;border-radius:5px;font-size:.8rem;">Membre</span>';
+    var statutTxt=u.banni?'<span class="user-banni">Banni</span>':'<span class="user-actif">Actif</span>';
+    var actions='';
+    if(!isSelf){
+      if(!u.banni){
+        actions+='<button class="btn danger" style="font-size:.72rem;padding:3px 8px;margin:2px;" data-action="ban" data-id="'+u.id+'">Bannir</button>';
+      } else {
+        actions+='<button class="btn green" style="font-size:.72rem;padding:3px 8px;margin:2px;" data-action="unban" data-id="'+u.id+'">Débannir</button>';
+      }
+      if(u.role==='membre'){
+        actions+='<button class="btn warn-btn" style="font-size:.72rem;padding:3px 8px;margin:2px;" data-action="promote" data-id="'+u.id+'">Promouvoir</button>';
+      } else {
+        actions+='<button class="btn ghost" style="font-size:.72rem;padding:3px 8px;margin:2px;" data-action="demote" data-id="'+u.id+'">Rétrograder</button>';
+      }
+    } else {
+      actions='<span class="muted">(vous)</span>';
+    }
+    tr.innerHTML='<td style="font-weight:600">'+esc(u.nom)+'</td><td>'+roleBadge+'</td><td>'+statutTxt+'</td><td class="muted">'+fmtDate(u.created_at)+'</td><td>'+actions+'</td>';
+    tb.appendChild(tr);
+  });
+  // bind action buttons
+  tb.querySelectorAll('button[data-action]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var action=btn.dataset.action;
+      var uid=parseInt(btn.dataset.id);
+      var user=allUsers.find(function(u){return u.id===uid;});
+      if(!user)return;
+      if(action==='ban'){
+        if(!confirm('Bannir '+user.nom+' ? Cette personne ne pourra plus se connecter.'))return;
+        updateUser(uid,{banni:true});
+      } else if(action==='unban'){
+        updateUser(uid,{banni:false});
+      } else if(action==='promote'){
+        if(!confirm('Promouvoir '+user.nom+' superviseur ?'))return;
+        updateUser(uid,{role:'superviseur'});
+      } else if(action==='demote'){
+        updateUser(uid,{role:'membre'});
+      }
+    });
+  });
+}
+
+function updateUser(uid,data){
+  if(!sb)return;
+  sb.from('morgue_users').update(data).eq('id',uid).then(function(res){
+    if(res.error){el('gestionMsg').innerHTML='<div class="err">'+esc(res.error.message)+'</div>';}
+    else{el('gestionMsg').innerHTML='<div class="ok-msg">✓ Utilisateur mis à jour.</div>';loadUsers();}
+    setTimeout(function(){el('gestionMsg').innerHTML='';},2500);
+  });
+}
+
+// ── SUPERVISEUR: suppression de corps ──
+function deleteCorps(id,nom){
+  if(currentRole!=='superviseur')return;
+  if(!confirm('Supprimer définitivement le dossier de '+nom+' ? Cette action est irréversible.'))return;
+  if(!sb)return;
+  sb.from('morgue_corps').delete().eq('id',id).then(function(res){
+    if(res.error){alert('Erreur : '+res.error.message);return;}
+    closeModal();load();
+  });
+}
+})();
+</script>
+</body>
+</html>
