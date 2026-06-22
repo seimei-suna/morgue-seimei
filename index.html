@@ -6,6 +6,7 @@
 <title>Morgue — Section Médicale Seimei | Sunagakure</title>
 <script src="vendor/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="config.js"></script>
 <style>
 @import url('vendor/fonts.css');
@@ -1031,8 +1032,31 @@ function _buildPDF(r){
   doc.setFont('helvetica','italic');doc.setFontSize(6.5);doc.setTextColor(cSandDeep[0],cSandDeep[1],cSandDeep[2]);
   doc.text('Ce document est la propriété de la Section Médicale Seimei. Toute reproduction non autorisée est interdite.',W/2,sigY,{align:'center'});
 
-  var fileName='autopsie_'+ident.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'_'+r.id+'.pdf';
-  doc.save(fileName);
+  var baseName='autopsie_'+ident.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'_'+r.id;
+  if(typeof pdfjsLib!=='undefined'){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var pdfData=doc.output('arraybuffer');
+    pdfjsLib.getDocument({data:pdfData}).promise.then(function(pdf){
+      return pdf.getPage(1);
+    }).then(function(page){
+      var scale=3;
+      var vp=page.getViewport({scale:scale});
+      var canvas=document.createElement('canvas');
+      canvas.width=vp.width;canvas.height=vp.height;
+      var ctx=canvas.getContext('2d');
+      return page.render({canvasContext:ctx,viewport:vp}).promise.then(function(){return canvas;});
+    }).then(function(canvas){
+      canvas.toBlob(function(blob){
+        var a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download=baseName+'.png';
+        a.click();
+        setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+      },'image/png');
+    }).catch(function(){doc.save(baseName+'.pdf');});
+  } else {
+    doc.save(baseName+'.pdf');
+  }
 }
 })();
 </script>
