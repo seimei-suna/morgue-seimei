@@ -170,6 +170,13 @@ footer .seal{color:var(--blood-light);font-family:'Cinzel',serif;}
 .m-user{font-size:.78rem;color:var(--sand-deep);line-height:1.4;margin-bottom:2px;}
 .m-user .name{font-family:'Cinzel',serif;font-weight:700;color:var(--gold);}
 @media(max-width:760px){.m-layout{flex-direction:column;}.m-sidebar{width:auto;position:static;}.m-nav{flex-direction:row;flex-wrap:wrap;}.m-nav .tab{width:auto;}}
+body.mdash .wrap{max-width:none;padding:0;}
+body.mdash header{display:none;}
+body.mdash footer{padding:18px 20px;}
+.m-layout{gap:0;min-height:100vh;}
+.m-sidebar{position:sticky;top:0;height:100vh;width:235px;border-radius:0;border:none;border-right:1px solid rgba(181,113,43,.35);padding:18px 14px;}
+.m-content{padding:26px 30px;}
+@media(max-width:760px){body.mdash .m-sidebar{position:static;height:auto;width:auto;border-right:none;border-bottom:1px solid rgba(181,113,43,.35);}body.mdash .m-content{padding:18px;}}
 </style>
 </head>
 <body>
@@ -364,7 +371,7 @@ function init(){
 init();
 
 function enterDash(){
-  el('auth').style.display='none';el('dash').style.display='block';
+  el('auth').style.display='none';el('dash').style.display='block';document.body.classList.add('mdash');
   el('userNameBar').textContent=currentUser;
   var badge=el('userRoleBadge');
   if(currentRole==='superviseur'){
@@ -446,7 +453,7 @@ function doRegister(){
 el('logoutBtn').addEventListener('click',function(){
   currentUser='';currentRole='membre';
   try{localStorage.removeItem('morgue_user');localStorage.removeItem('morgue_role');}catch(e){}
-  el('dash').style.display='none';el('auth').style.display='block';
+  el('dash').style.display='none';el('auth').style.display='block';document.body.classList.remove('mdash');
   el('loginNom').value='';el('loginSceau').value='';el('loginMsg').innerHTML='';
 });
 
