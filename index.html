@@ -904,7 +904,7 @@ function generateAutopsiePDF(r){
 function _buildPDF(r){
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({unit:'mm',format:'a4'});
-  var W=210,H=297,mx=20,cw=W-2*mx;
+  var W=210,H=297,mx=18,cw=W-2*mx;
   var y=0;
   var hasCaveat=false;
 
@@ -918,7 +918,6 @@ function _buildPDF(r){
 
   var cOcre=[181,113,43];
   var cSandDeep=[200,155,94];
-  var cParch=[240,223,184];
   var cParchBg=[244,228,193];
   var cGold=[210,170,80];
   var cBrown=[90,60,30];
@@ -928,69 +927,68 @@ function _buildPDF(r){
   function hline(y1,col){doc.setDrawColor(col[0],col[1],col[2]);doc.setLineWidth(0.4);doc.line(mx,y1,W-mx,y1);}
 
   function setFont(style,size){
-    if(hasCaveat&&style!=='label'){doc.setFont('Caveat','normal');doc.setFontSize(size+3);}
+    if(hasCaveat&&style!=='label'){doc.setFont('Caveat','normal');doc.setFontSize(size+2);}
     else if(style==='label'){doc.setFont('helvetica','bold');doc.setFontSize(size);}
     else{doc.setFont('helvetica','normal');doc.setFontSize(size);}
   }
 
   function sectionTitle(txt){
-    y+=5;
-    hexRect(mx,y,cw,7.5,cOcre);
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,250,235);
-    doc.text(txt.toUpperCase(),mx+3,y+5.2);
-    y+=12;
+    y+=2;
+    hexRect(mx,y,cw,6.5,cOcre);
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(255,250,235);
+    doc.text(txt.toUpperCase(),mx+3,y+4.5);
+    y+=9;
   }
   function fieldRow(label,value){
-    if(y>H-25){doc.addPage();drawBg();y=20;}
-    setFont('label',9);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
+    setFont('label',8);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
     doc.text(label,mx,y);
-    setFont('value',9);doc.setTextColor(cDarkBrown[0],cDarkBrown[1],cDarkBrown[2]);
+    setFont('value',8);doc.setTextColor(cDarkBrown[0],cDarkBrown[1],cDarkBrown[2]);
     var val=(value==null||value==='')?'—':''+value;
-    doc.text(val,mx+45,y);
-    y+=7;
+    doc.text(val,mx+42,y);
+    y+=5.5;
   }
   function textBlock(label,value){
-    if(y>H-30){doc.addPage();drawBg();y=20;}
-    setFont('label',9);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
-    doc.text(label,mx,y);y+=5;
-    setFont('value',9);doc.setTextColor(cDarkBrown[0],cDarkBrown[1],cDarkBrown[2]);
+    setFont('label',8);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
+    doc.text(label,mx,y);y+=4;
+    setFont('value',8);doc.setTextColor(cDarkBrown[0],cDarkBrown[1],cDarkBrown[2]);
     var val=(value==null||value==='')?'Aucune information':''+value;
     var lines=doc.splitTextToSize(val,cw);
-    lines.forEach(function(ln){
-      if(y>H-20){doc.addPage();drawBg();y=20;}
-      doc.text(ln,mx,y);y+=5;
-    });
-    y+=3;
+    lines.forEach(function(ln){doc.text(ln,mx,y);y+=4.2;});
+    y+=1;
   }
 
-  function drawBg(){
-    hexRect(0,0,W,H,cParchBg);
-    doc.setDrawColor(cOcre[0],cOcre[1],cOcre[2]);doc.setLineWidth(1);
-    doc.rect(8,8,W-16,H-16);
-    doc.setLineWidth(0.3);
-    doc.rect(10,10,W-20,H-20);
-  }
-  drawBg();
+  // background
+  hexRect(0,0,W,H,cParchBg);
+  doc.setDrawColor(cOcre[0],cOcre[1],cOcre[2]);doc.setLineWidth(1);
+  doc.rect(8,8,W-16,H-16);
+  doc.setLineWidth(0.3);
+  doc.rect(10,10,W-20,H-20);
 
-  y=18;
-  doc.setDrawColor(cGold[0],cGold[1],cGold[2]);doc.setLineWidth(0.8);
-  doc.line(mx,y,W-mx,y);
-  y+=9;
-  doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(cOcre[0],cOcre[1],cOcre[2]);
-  doc.text('RAPPORT D\'AUTOPSIE',W/2,y,{align:'center'});
-  y+=7;
-  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
-  doc.text('Section Médicale Seimei — Morgue de Sunagakure',W/2,y,{align:'center'});
-  y+=5;
-  doc.setFontSize(8);doc.setTextColor(cSandDeep[0],cSandDeep[1],cSandDeep[2]);
-  doc.text('DOCUMENT CONFIDENTIEL',W/2,y,{align:'center'});
+  // cachet in top-right corner
+  var cx=W-mx-12,cy=24;
+  doc.setDrawColor(cOcre[0],cOcre[1],cOcre[2]);doc.setLineWidth(0.6);
+  doc.circle(cx,cy,9);
+  doc.setLineWidth(0.3);doc.circle(cx,cy,7.5);
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(cOcre[0],cOcre[1],cOcre[2]);
+  doc.text('SEIMEI',cx,cy-1,{align:'center'});
+  doc.setFontSize(4.5);
+  doc.text('SUNAGAKURE',cx,cy+2.5,{align:'center'});
+
+  // header
+  y=16;
+  doc.setDrawColor(cGold[0],cGold[1],cGold[2]);doc.setLineWidth(0.6);
+  doc.line(mx,y,W-mx-28,y);
+  y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(cOcre[0],cOcre[1],cOcre[2]);
+  doc.text('RAPPORT D\'AUTOPSIE',mx,y);
+  y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
+  doc.text('Section Médicale Seimei — Morgue de Sunagakure',mx,y);
   y+=3;
   doc.setDrawColor(cGold[0],cGold[1],cGold[2]);doc.line(mx,y,W-mx,y);
   y+=5;
-  doc.setFontSize(8);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
-  doc.text('Dossier n° '+r.id+' — Généré le '+new Date().toLocaleDateString('fr-FR'),W/2,y,{align:'center'});
-  y+=8;
 
+  // content
   sectionTitle('Identité du défunt');
   var ident=(r.nom||'Inconnu')+(r.prenom?' '+r.prenom:'');
   fieldRow('Nom complet :',ident);
@@ -998,19 +996,16 @@ function _buildPDF(r){
   fieldRow('Village :',r.village||'Inconnu');
   fieldRow('Date du décès :',r.date_deces?fmtShort(r.date_deces):'Non renseignée');
   fieldRow('Cause présumée :',r.cause||'Inconnue');
-  y+=2;
 
   sectionTitle('Circonstances du décès');
   textBlock('Lieu du décès :',r.lieu_deces);
   textBlock('Circonstances :',r.circonstances);
   fieldRow('Ramené par :',r.ramene_par);
   fieldRow('Admis par :',r.admis_par);
-  y+=2;
 
   sectionTitle('Rapport médical');
   fieldRow('Médecin légiste :',r.autopsie_medecin);
   fieldRow('Date de l\'autopsie :',r.autopsie_date?fmtShort(r.autopsie_date):'Non renseignée');
-  y+=2;
   textBlock('Observations :',r.autopsie_observations);
   textBlock('Prélèvements effectués :',r.autopsie_prelevements);
   textBlock('Conclusions :',r.autopsie_conclusions);
@@ -1020,29 +1015,20 @@ function _buildPDF(r){
     textBlock('',r.notes);
   }
 
-  var sigY=Math.max(y+15,H-50);
-  if(sigY>H-20){doc.addPage();drawBg();sigY=60;}
+  // signature at bottom
+  var sigY=H-30;
   hline(sigY,cGold);
-  sigY+=8;
-  setFont('label',9);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
+  sigY+=6;
+  setFont('label',8);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
   doc.text('Signature du médecin légiste :',mx,sigY);
   doc.setDrawColor(cBrown[0],cBrown[1],cBrown[2]);doc.setLineWidth(0.3);
-  doc.line(mx+55,sigY,mx+120,sigY);
+  doc.line(mx+50,sigY,mx+115,sigY);
   if(r.autopsie_medecin){
-    setFont('value',12);doc.setTextColor(cDarkBrown[0],cDarkBrown[1],cDarkBrown[2]);
-    doc.text(r.autopsie_medecin,mx+60,sigY-1);
+    setFont('value',11);doc.setTextColor(cDarkBrown[0],cDarkBrown[1],cDarkBrown[2]);
+    doc.text(r.autopsie_medecin,mx+55,sigY-1);
   }
-  sigY+=10;
-  setFont('label',9);doc.setTextColor(cBrown[0],cBrown[1],cBrown[2]);
-  doc.text('Cachet de la Section Médicale :',mx,sigY);
-  doc.setDrawColor(cOcre[0],cOcre[1],cOcre[2]);doc.setLineWidth(0.6);
-  doc.circle(mx+90,sigY-2,8);
-  doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(cOcre[0],cOcre[1],cOcre[2]);
-  doc.text('SEIMEI',mx+90,sigY-2,{align:'center'});
-  doc.setFontSize(4);
-  doc.text('SUNAGAKURE',mx+90,sigY+1,{align:'center'});
-  sigY+=14;
-  doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(cSandDeep[0],cSandDeep[1],cSandDeep[2]);
+  sigY+=8;
+  doc.setFont('helvetica','italic');doc.setFontSize(6.5);doc.setTextColor(cSandDeep[0],cSandDeep[1],cSandDeep[2]);
   doc.text('Ce document est la propriété de la Section Médicale Seimei. Toute reproduction non autorisée est interdite.',W/2,sigY,{align:'center'});
 
   var fileName='autopsie_'+ident.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'_'+r.id+'.pdf';
