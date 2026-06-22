@@ -156,7 +156,21 @@ footer .seal{color:var(--blood-light);font-family:'Cinzel',serif;}
 .assign-item{padding:10px 12px;border:1px solid rgba(154,40,32,.25);border-radius:8px;margin-bottom:6px;
   cursor:pointer;transition:.18s;display:flex;justify-content:space-between;align-items:center;}
 .assign-item:hover{background:rgba(154,40,32,.1);border-color:var(--blood-light);}
-.ico{width:1em;height:1em;vertical-align:-.14em;margin-right:.25em}</style>
+.ico{width:1em;height:1em;vertical-align:-.14em;margin-right:.25em}.m-layout{display:flex;align-items:flex-start;gap:20px;}
+.m-sidebar{width:215px;flex-shrink:0;position:sticky;top:20px;display:flex;flex-direction:column;background:linear-gradient(160deg,rgba(240,223,184,.07),rgba(60,41,20,.18));border:1px solid rgba(181,113,43,.4);border-radius:14px;padding:16px 12px;}
+.m-content{flex:1;min-width:0;}
+.m-brand{display:flex;align-items:center;gap:9px;color:var(--sand-1);padding:2px 6px 12px;border-bottom:1px solid rgba(181,113,43,.3);margin-bottom:10px;}
+.m-brand-ico svg{width:26px;height:26px;color:var(--ocre);}
+.m-brand-txt{font-family:'Cinzel',serif;font-weight:700;font-size:16px;line-height:1.1;display:flex;flex-direction:column;}
+.m-brand-txt small{font-weight:400;font-size:9px;opacity:.6;letter-spacing:.4px;text-transform:uppercase;margin-top:2px;}
+.m-nav{display:flex;flex-direction:column;gap:5px;}
+.m-nav .tab{width:100%;display:inline-flex;align-items:center;gap:.55em;justify-content:flex-start;text-align:left;}
+.m-nav .tab svg{width:18px;height:18px;flex-shrink:0;}
+.m-foot{margin-top:14px;padding-top:12px;border-top:1px solid rgba(181,113,43,.3);display:flex;flex-direction:column;gap:8px;}
+.m-user{font-size:.78rem;color:var(--sand-deep);line-height:1.4;margin-bottom:2px;}
+.m-user .name{font-family:'Cinzel',serif;font-weight:700;color:var(--gold);}
+@media(max-width:760px){.m-layout{flex-direction:column;}.m-sidebar{width:auto;position:static;}.m-nav{flex-direction:row;flex-wrap:wrap;}.m-nav .tab{width:auto;}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -213,19 +227,25 @@ footer .seal{color:var(--blood-light);font-family:'Cinzel',serif;}
 
 <!-- DASHBOARD -->
 <div id="dash">
-  <div class="user-bar">
-    <span>Connecté : <span class="name" id="userNameBar">—</span> <span id="userRoleBadge" style="font-size:.75rem;padding:2px 8px;border-radius:5px;margin-left:6px;display:none;"></span></span>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="btn ghost" style="font-size:.75rem;padding:4px 10px;display:none;" id="promoSelfBtn">Devenir superviseur</button>
-      <button class="btn ghost" style="font-size:.78rem;padding:4px 12px;" id="logoutBtn">Déconnexion</button>
-    </div>
-  </div>
-  <div class="tabs">
-    <button class="tab active" data-view="list"><svg class="ico" <rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/>><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/></svg> Registre</button>
-    <button class="tab" data-view="caissons"><svg class="ico" <path d="M12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/>><path d="M12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg> Caissons</button>
-    <button class="tab" data-view="add"><svg class="ico" <path d="M12 5v14M5 12h14"/>><path d="M12 5v14M5 12h14"/></svg> Admission</button>
-    <button class="tab" data-view="gestion" id="tabGestion" style="display:none;"><svg class="ico" <circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> Gestion</button>
-  </div>
+  <div class="m-layout">
+    <aside class="m-sidebar">
+      <div class="m-brand">
+        <span class="m-brand-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg></span>
+        <span class="m-brand-txt">Morgue<small>Sunagakure</small></span>
+      </div>
+      <nav class="m-nav">
+        <button class="tab active" data-view="list"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/></svg> Registre</button>
+        <button class="tab" data-view="caissons"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg> Caissons</button>
+        <button class="tab" data-view="add"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Admission</button>
+        <button class="tab" data-view="gestion" id="tabGestion" style="display:none;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> Gestion</button>
+      </nav>
+      <div class="m-foot">
+        <div class="m-user">Connecté : <span class="name" id="userNameBar">—</span> <span id="userRoleBadge" style="font-size:.7rem;padding:2px 8px;border-radius:5px;display:none;"></span></div>
+        <button class="btn ghost" style="display:none;width:100%;" id="promoSelfBtn">Devenir superviseur</button>
+        <button class="btn ghost" style="width:100%;" id="logoutBtn">Déconnexion</button>
+      </div>
+    </aside>
+    <div class="m-content">
   <div id="viewList">
     <div class="summary" id="summary"></div>
     <div class="toolbar">
@@ -321,9 +341,11 @@ footer .seal{color:var(--blood-light);font-family:'Cinzel',serif;}
       <div id="gestionMsg" style="margin-top:10px;"></div>
     </div>
   </div>
+      </div>
+    </div>
 </div>
 <div class="modal-bg" id="modalBg" style="display:none;" onclick="if(event.target===this)closeModal()">
-  <div class="modal"><span class="modal-close" onclick="closeModal()"><svg class="ico" <path d="M6 6l12 12M18 6 6 18"/>><path d="M6 6l12 12M18 6 6 18"/></svg></span><div id="modalBody"></div></div>
+  <div class="modal"><span class="modal-close" onclick="closeModal()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span><div id="modalBody"></div></div>
 </div>
 
 <footer>Registre confidentiel · <span class="seal">Seimei</span> · Morgue de Sunagakure</footer>
@@ -413,7 +435,7 @@ function doRegister(){
     if(res.data&&res.data.length>0){el('regMsg').innerHTML='<div class="err">Ce nom est déjà utilisé.</div>';return;}
     sb.from('morgue_users').insert([{nom:nom,sceau:s1}]).then(function(r2){
       if(r2.error){el('regMsg').innerHTML='<div class="err">Erreur : '+esc(r2.error.message)+'</div>';return;}
-      el('regMsg').innerHTML='<div class="ok-msg"><svg class="ico" <path d="M5 13l4 4L19 7"/>><path d="M5 13l4 4L19 7"/></svg> Identifiant créé. Tu peux te connecter.</div>';
+      el('regMsg').innerHTML='<div class="ok-msg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg> Identifiant créé. Tu peux te connecter.</div>';
       el('regNom').value='';el('regSceau').value='';el('regSceau2').value='';
       setTimeout(function(){el('tabLogin').click();},1500);
     });
@@ -548,7 +570,7 @@ el('submitBtn').addEventListener('click',function(){
   sb.from('morgue_corps').insert([row]).then(function(res){
     el('submitBtn').disabled=false;
     if(res.error){el('addMsg').innerHTML='<div class="err">'+esc(res.error.message)+'</div>';return;}
-    el('addMsg').innerHTML='<div class="ok-msg"><svg class="ico" <path d="M5 13l4 4L19 7"/>><path d="M5 13l4 4L19 7"/></svg> Corps enregistré par '+esc(currentUser)+'.</div>';
+    el('addMsg').innerHTML='<div class="ok-msg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg> Corps enregistré par '+esc(currentUser)+'.</div>';
     ['fNom','fPrenom','fCirc','fLieu','fRamene','fNotes'].forEach(function(id){el(id).value='';});
     el('fDate').value='';el('fCaisson').value='';load();
     setTimeout(function(){el('addMsg').innerHTML='';},3000);
@@ -562,7 +584,7 @@ function openDetail(id){
   var body=el('modalBody');
   body.innerHTML=
     '<h3>Dossier — '+ident+'</h3>'+
-    '<div class="section-title"><svg class="ico" <rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/>><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/></svg> Informations générales</div>'+
+    '<div class="section-title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/></svg> Informations générales</div>'+
     infoRow('Identité',ident)+infoRow('Grade',esc(r.grade))+infoRow('Village',esc(r.village))+
     infoRow('Date du décès',fmtShort(r.date_deces))+infoRow('Cause',esc(r.cause))+
     infoRow('Circonstances',esc(r.circonstances)||'—')+infoRow('Lieu',esc(r.lieu_deces)||'—')+
@@ -571,7 +593,7 @@ function openDetail(id){
     infoRow('Localisation','<span class="loc-badge '+esc(r.localisation)+'">'+locLbl(r.localisation)+'</span>'+(r.caisson_numero?' — Caisson n°'+r.caisson_numero:'')+'')+
     infoRow('Notes',esc(r.notes)||'—')+
     // localisation
-    '<div class="section-title"><svg class="ico" <path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg> Localisation du corps</div>'+
+    '<div class="section-title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg> Localisation du corps</div>'+
     '<div class="form-grid"><div class="form-group"><label>Emplacement actuel</label>'+
     '<select id="dLoc">'+
       '<option value="caisson"'+(r.localisation==='caisson'?' selected':'')+'>En caisson (morgue)</option>'+
@@ -596,7 +618,7 @@ function openDetail(id){
     '</select></div></div>'+
     '<button class="btn ghost" id="dSaveLoc" style="margin-bottom:16px;">Mettre à jour la localisation</button>'+
     // autopsie
-    '<div class="section-title"><svg class="ico" <path d="M6 20h14"/><path d="M9.5 17a6 6 0 0 0 8.5-5.5"/><path d="M9 17l-2-1 4-7 2 1Z"/><path d="M11.5 4l3 1.5"/>><path d="M6 20h14"/><path d="M9.5 17a6 6 0 0 0 8.5-5.5"/><path d="M9 17l-2-1 4-7 2 1Z"/><path d="M11.5 4l3 1.5"/></svg> Autopsie</div>'+
+    '<div class="section-title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h14"/><path d="M9.5 17a6 6 0 0 0 8.5-5.5"/><path d="M9 17l-2-1 4-7 2 1Z"/><path d="M11.5 4l3 1.5"/></svg> Autopsie</div>'+
     '<div class="form-grid">'+
       '<div class="form-group"><label>Médecin</label><input type="text" id="dAutMed" value="'+esc(r.autopsie_medecin)+'"></div>'+
       '<div class="form-group"><label>Date</label><input type="date" id="dAutDate" value="'+(r.autopsie_date||'')+'"></div>'+
@@ -610,7 +632,7 @@ function openDetail(id){
       '<button class="btn green" id="dDoneAut">Statut → Autopsié</button>'+
     '</div>'+
     // libération
-    '<div class="section-title"><svg class="ico" <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/><path d="M12 3v11M8 7l4-4 4 4"/>><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/><path d="M12 3v11M8 7l4-4 4 4"/></svg> Libération</div>'+
+    '<div class="section-title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/><path d="M12 3v11M8 7l4-4 4 4"/></svg> Libération</div>'+
     '<div class="form-grid">'+
       '<div class="form-group"><label>Remis à</label><input type="text" id="dLibDest" value="'+esc(r.liberation_destinataire)+'"></div>'+
       '<div class="form-group"><label>Type</label><select id="dLibType">'+
@@ -621,7 +643,7 @@ function openDetail(id){
       '<div class="form-group"><label>Autorisé par</label><input type="text" id="dLibAuth" value="'+esc(r.liberation_autorise_par)+'"></div>'+
     '</div>'+
     '<button class="btn" id="dSaveLib" style="margin-top:8px;">Libérer le corps</button>'+
-    (currentRole==='superviseur'?'<div class="section-title" style="color:var(--blood-light);"><svg class="ico" <path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/>><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg> Zone superviseur</div><button class="btn danger" id="dDeleteCorps" style="margin-top:4px;">Supprimer ce dossier</button>':'')+
+    (currentRole==='superviseur'?'<div class="section-title" style="color:var(--blood-light);"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg> Zone superviseur</div><button class="btn danger" id="dDeleteCorps" style="margin-top:4px;">Supprimer ce dossier</button>':'')+
     '<div style="margin-top:8px;font-size:.88rem;color:var(--sand-deep);">Dernière modification par : '+(esc(r.derniere_modif_par)||'—')+'</div>'+
     '<div id="dMsg" style="margin-top:10px;"></div>';
   setTimeout(function(){
@@ -636,8 +658,9 @@ function openDetail(id){
         autopsie_observations:el('dAutObs').value.trim(),autopsie_prelevements:el('dAutPrel').value.trim(),
         autopsie_conclusions:el('dAutConc').value.trim()});
     });
-    el('dStartAut').addEventListener('click',function(){upd(id,{statut:'autopsie_en_cours'});});
-    el('dDoneAut').addEventListener('click',function(){upd(id,{statut:'autopsie'});});
+    function autData(){return {autopsie_medecin:el('dAutMed').value.trim(),autopsie_date:el('dAutDate').value||null,autopsie_observations:el('dAutObs').value.trim(),autopsie_prelevements:el('dAutPrel').value.trim(),autopsie_conclusions:el('dAutConc').value.trim()};}
+    el('dStartAut').addEventListener('click',function(){upd(id,Object.assign(autData(),{statut:'autopsie_en_cours'}));});
+    el('dDoneAut').addEventListener('click',function(){upd(id,Object.assign(autData(),{statut:'autopsie'}));});
     el('dSaveLib').addEventListener('click',function(){
       var libType=el('dLibType').value;
       var newLoc=libType==='Crémation'?'incinere':libType==='Enterrement'?'enterre':'remis';
@@ -657,7 +680,7 @@ function upd(id,data){
   data.derniere_modif_date=new Date().toISOString();
   sb.from('morgue_corps').update(data).eq('id',id).then(function(res){
     if(res.error){el('dMsg').innerHTML='<div class="err">'+esc(res.error.message)+'</div>';}
-    else{el('dMsg').innerHTML='<div class="ok-msg"><svg class="ico" <path d="M5 13l4 4L19 7"/>><path d="M5 13l4 4L19 7"/></svg> Mis à jour par '+esc(currentUser)+'.</div>';load();}
+    else{el('dMsg').innerHTML='<div class="ok-msg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg> Mis à jour par '+esc(currentUser)+'.</div>';load();}
   });
 }
 
@@ -698,7 +721,7 @@ function renderCaissons(){
   // show unassigned bodies
   var unassigned=rows.filter(function(r){return r.localisation==='caisson'&&(!r.caisson_numero||r.caisson_numero<1||r.caisson_numero>12);});
   if(unassigned.length>0){
-    el('caissonMsg').innerHTML='<div style="color:var(--gold);font-style:italic;margin-top:8px;"><svg class="ico" <path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/>><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg> '+unassigned.length+' corps en caisson non assigné(s) à un emplacement. Clique sur un caisson vide pour les placer.</div>';
+    el('caissonMsg').innerHTML='<div style="color:var(--gold);font-style:italic;margin-top:8px;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg> '+unassigned.length+' corps en caisson non assigné(s) à un emplacement. Clique sur un caisson vide pour les placer.</div>';
   } else {
     el('caissonMsg').innerHTML='';
   }
@@ -839,7 +862,7 @@ function updateUser(uid,data){
   if(!sb)return;
   sb.from('morgue_users').update(data).eq('id',uid).then(function(res){
     if(res.error){el('gestionMsg').innerHTML='<div class="err">'+esc(res.error.message)+'</div>';}
-    else{el('gestionMsg').innerHTML='<div class="ok-msg"><svg class="ico" <path d="M5 13l4 4L19 7"/>><path d="M5 13l4 4L19 7"/></svg> Utilisateur mis à jour.</div>';loadUsers();}
+    else{el('gestionMsg').innerHTML='<div class="ok-msg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg> Utilisateur mis à jour.</div>';loadUsers();}
     setTimeout(function(){el('gestionMsg').innerHTML='';},2500);
   });
 }
