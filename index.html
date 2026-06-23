@@ -922,16 +922,17 @@ function renderStats(){
   buildChart('chartVillages','bar',{labels:villLabels,datasets:[{label:'Corps',data:villData,backgroundColor:'#c89b5e',borderRadius:4}]},
     Object.assign({},chartOpts,{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#c89b5e'}},y:{ticks:{color:'#c89b5e',stepSize:1},beginAtZero:true}}}));
 
-  // — Timeline admissions —
-  var monthMap={};
+  // — Timeline admissions (par jour) —
+  var dayMap={};
   rows.forEach(function(r){
     var d=new Date(r.created_at);if(isNaN(d))return;
-    var key=d.getFullYear()+'-'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1);
-    monthMap[key]=(monthMap[key]||0)+1;
+    var p=function(x){return(x<10?'0':'')+x;};
+    var key=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+    dayMap[key]=(dayMap[key]||0)+1;
   });
-  var monthKeys=Object.keys(monthMap).sort();
-  var monthLabels=monthKeys.map(function(k){var p=k.split('-');return p[1]+'/'+p[0];});
-  var monthData=monthKeys.map(function(k){return monthMap[k];});
+  var dayKeys=Object.keys(dayMap).sort();
+  var monthLabels=dayKeys.map(function(k){var p=k.split('-');return p[2]+'/'+p[1];});
+  var monthData=dayKeys.map(function(k){return dayMap[k];});
   buildChart('chartTimeline','line',{labels:monthLabels,datasets:[{label:'Admissions',data:monthData,borderColor:'#ffd86b',backgroundColor:'rgba(255,216,107,.15)',fill:true,tension:0.3,pointBackgroundColor:'#ffd86b'}]},
     Object.assign({},chartOpts,{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#c89b5e'}},y:{ticks:{color:'#c89b5e',stepSize:1},beginAtZero:true}}}));
 
