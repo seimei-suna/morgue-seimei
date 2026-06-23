@@ -6,6 +6,7 @@
 <title>Morgue — Section Médicale Seimei | Sunagakure</title>
 <script src="vendor/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="config.js"></script>
 <style>
@@ -179,6 +180,7 @@ body.mdash footer{padding:18px 20px;}
 .m-sidebar{position:sticky;top:0;height:100vh;width:235px;border-radius:0;border:none;border-right:1px solid rgba(181,113,43,.35);padding:18px 14px;}
 .m-content{padding:26px 30px;}
 @media(max-width:760px){body.mdash .m-sidebar{position:static;height:auto;width:auto;border-right:none;border-bottom:1px solid rgba(181,113,43,.35);}body.mdash .m-content{padding:18px;}}
+@media(max-width:800px){#viewStats .panel>div{grid-template-columns:1fr !important;}}
 </style>
 </head>
 <body>
@@ -246,6 +248,7 @@ body.mdash footer{padding:18px 20px;}
         <button class="tab active" data-view="list"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6"/></svg> Registre</button>
         <button class="tab" data-view="caissons"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg> Caissons</button>
         <button class="tab" data-view="add"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Admission</button>
+        <button class="tab" data-view="stats"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Statistiques</button>
         <button class="tab" data-view="gestion" id="tabGestion" style="display:none;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> Gestion</button>
       </nav>
       <div class="m-foot">
@@ -333,6 +336,19 @@ body.mdash footer{padding:18px 20px;}
         <button class="btn" id="submitBtn">Enregistrer l'admission</button>
       </div>
       <div id="addMsg"></div>
+    </div>
+  </div>
+  <!-- STATS -->
+  <div id="viewStats" style="display:none;">
+    <div class="panel">
+      <h2>Statistiques de la morgue</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Causes de décès</h2><canvas id="chartCauses" height="220"></canvas></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Corps par village</h2><canvas id="chartVillages" height="220"></canvas></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Admissions dans le temps</h2><canvas id="chartTimeline" height="220"></canvas></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Répartition des statuts</h2><canvas id="chartStatuts" height="220"></canvas></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;" id="statsCards"></div>
     </div>
   </div>
   <!-- GESTION (superviseurs) -->
@@ -468,9 +484,11 @@ document.querySelectorAll('.tab').forEach(function(t){
     el('viewList').style.display=v==='list'?'block':'none';
     el('viewCaissons').style.display=v==='caissons'?'block':'none';
     el('viewAdd').style.display=v==='add'?'block':'none';
+    el('viewStats').style.display=v==='stats'?'block':'none';
     el('viewGestion').style.display=v==='gestion'?'block':'none';
     if(v==='gestion') loadUsers();
     if(v==='caissons') renderCaissons();
+    if(v==='stats') renderStats();
   });
 });
 
@@ -880,6 +898,71 @@ function updateUser(uid,data){
 }
 
 // ── SUPERVISEUR: suppression de corps ──
+// ── STATS ──
+var statsCharts={};
+function renderStats(){
+  if(!rows.length){el('statsCards').innerHTML='<div class="empty" style="grid-column:1/-1;">Aucune donnée.</div>';return;}
+
+  var palette=['#c89b5e','#b5712b','#8a4f1a','#ffd86b','#6fcf97','#9a2820','#c4453a','#e8a060','#8ac0e8','#c8a878'];
+  var chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f0dfb8',font:{size:11}}}}};
+
+  // — Causes de décès —
+  var causeMap={};
+  rows.forEach(function(r){var c=r.cause||'Inconnue';causeMap[c]=(causeMap[c]||0)+1;});
+  var causeLabels=Object.keys(causeMap).sort(function(a,b){return causeMap[b]-causeMap[a];});
+  var causeData=causeLabels.map(function(k){return causeMap[k];});
+  buildChart('chartCauses','doughnut',{labels:causeLabels,datasets:[{data:causeData,backgroundColor:palette,borderWidth:0}]},
+    Object.assign({},chartOpts,{plugins:{legend:{position:'right',labels:{color:'#f0dfb8',font:{size:11}}}}}));
+
+  // — Corps par village —
+  var villMap={};
+  rows.forEach(function(r){var v=r.village||'Inconnu';villMap[v]=(villMap[v]||0)+1;});
+  var villLabels=Object.keys(villMap).sort(function(a,b){return villMap[b]-villMap[a];});
+  var villData=villLabels.map(function(k){return villMap[k];});
+  buildChart('chartVillages','bar',{labels:villLabels,datasets:[{label:'Corps',data:villData,backgroundColor:'#c89b5e',borderRadius:4}]},
+    Object.assign({},chartOpts,{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#c89b5e'}},y:{ticks:{color:'#c89b5e',stepSize:1},beginAtZero:true}}}));
+
+  // — Timeline admissions —
+  var monthMap={};
+  rows.forEach(function(r){
+    var d=new Date(r.created_at);if(isNaN(d))return;
+    var key=d.getFullYear()+'-'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1);
+    monthMap[key]=(monthMap[key]||0)+1;
+  });
+  var monthKeys=Object.keys(monthMap).sort();
+  var monthLabels=monthKeys.map(function(k){var p=k.split('-');return p[1]+'/'+p[0];});
+  var monthData=monthKeys.map(function(k){return monthMap[k];});
+  buildChart('chartTimeline','line',{labels:monthLabels,datasets:[{label:'Admissions',data:monthData,borderColor:'#ffd86b',backgroundColor:'rgba(255,216,107,.15)',fill:true,tension:0.3,pointBackgroundColor:'#ffd86b'}]},
+    Object.assign({},chartOpts,{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#c89b5e'}},y:{ticks:{color:'#c89b5e',stepSize:1},beginAtZero:true}}}));
+
+  // — Statuts —
+  var statMap={};
+  rows.forEach(function(r){var s=r.statut||'admis';statMap[s]=(statMap[s]||0)+1;});
+  var statColors={admis:'#ffd86b',autopsie_en_cours:'#b5712b',autopsie:'#6fcf97',libere:'#c89b5e'};
+  var statLabels=Object.keys(statMap);
+  var statDisplayLabels=statLabels.map(function(s){return {admis:'Admis',autopsie_en_cours:'Autopsie en cours',autopsie:'Autopsié',libere:'Libéré'}[s]||s;});
+  var statData=statLabels.map(function(k){return statMap[k];});
+  var statBg=statLabels.map(function(k){return statColors[k]||'#c89b5e';});
+  buildChart('chartStatuts','doughnut',{labels:statDisplayLabels,datasets:[{data:statData,backgroundColor:statBg,borderWidth:0}]},
+    Object.assign({},chartOpts,{plugins:{legend:{position:'right',labels:{color:'#f0dfb8',font:{size:11}}}}}));
+
+  // — Cartes récap —
+  var totalCorps=rows.length;
+  var enCaisson=rows.filter(function(r){return r.localisation==='caisson';});
+  var autopsies=rows.filter(function(r){return r.statut==='autopsie'||r.statut==='autopsie_en_cours';}).length;
+  var durees=enCaisson.map(function(r){return(Date.now()-new Date(r.created_at).getTime())/(1000*60*60*24);});
+  var dureeMoy=durees.length>0?Math.round(durees.reduce(function(a,b){return a+b;},0)/durees.length*10)/10:0;
+  el('statsCards').innerHTML=
+    card('Total corps',totalCorps,'sand')+card('En caisson',enCaisson.length,'gold')+
+    card('Autopsies',autopsies,'green')+card('Durée moy. caisson',dureeMoy+'j','ocre');
+}
+
+function buildChart(canvasId,type,data,opts){
+  if(statsCharts[canvasId]){statsCharts[canvasId].destroy();}
+  var ctx=el(canvasId).getContext('2d');
+  statsCharts[canvasId]=new Chart(ctx,{type:type,data:data,options:opts});
+}
+
 function deleteCorps(id,nom){
   if(currentRole!=='superviseur')return;
   if(!confirm('Supprimer définitivement le dossier de '+nom+' ? Cette action est irréversible.'))return;
