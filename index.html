@@ -343,10 +343,10 @@ body.mdash footer{padding:18px 20px;}
     <div class="panel">
       <h2>Statistiques de la morgue</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Causes de décès</h2><canvas id="chartCauses" height="220"></canvas></div>
-        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Corps par village</h2><canvas id="chartVillages" height="220"></canvas></div>
-        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Admissions dans le temps</h2><canvas id="chartTimeline" height="220"></canvas></div>
-        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Répartition des statuts</h2><canvas id="chartStatuts" height="220"></canvas></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Causes de décès</h2><div style="position:relative;height:220px;"><canvas id="chartCauses"></canvas></div></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Corps par village</h2><div style="position:relative;height:220px;"><canvas id="chartVillages"></canvas></div></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Admissions dans le temps</h2><div style="position:relative;height:220px;"><canvas id="chartTimeline"></canvas></div></div>
+        <div class="panel" style="margin-bottom:0;"><h2 style="font-size:.95rem;">Répartition des statuts</h2><div style="position:relative;height:220px;"><canvas id="chartStatuts"></canvas></div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;" id="statsCards"></div>
     </div>
@@ -904,7 +904,7 @@ function renderStats(){
   if(!rows.length){el('statsCards').innerHTML='<div class="empty" style="grid-column:1/-1;">Aucune donnée.</div>';return;}
 
   var palette=['#c89b5e','#b5712b','#8a4f1a','#ffd86b','#6fcf97','#9a2820','#c4453a','#e8a060','#8ac0e8','#c8a878'];
-  var chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f0dfb8',font:{size:11}}}}};
+  var chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#f0dfb8',font:{size:11}}}},layout:{padding:4}};
 
   // — Causes de décès —
   var causeMap={};
