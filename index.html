@@ -958,9 +958,14 @@ function renderStats(){
 }
 
 function buildChart(canvasId,type,data,opts){
-  if(statsCharts[canvasId]){statsCharts[canvasId].destroy();}
-  var ctx=el(canvasId).getContext('2d');
-  statsCharts[canvasId]=new Chart(ctx,{type:type,data:data,options:opts});
+  if(statsCharts[canvasId]){statsCharts[canvasId].destroy();delete statsCharts[canvasId];}
+  var old=el(canvasId);
+  var parent=old.parentNode;
+  parent.removeChild(old);
+  var c=document.createElement('canvas');
+  c.id=canvasId;
+  parent.appendChild(c);
+  statsCharts[canvasId]=new Chart(c,{type:type,data:data,options:opts});
 }
 
 function deleteCorps(id,nom){
